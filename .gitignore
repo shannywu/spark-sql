@@ -1,0 +1,9 @@
+*.parquet/
+target/
+project/
+spark-warehouse/
+metastore_db/
+
+derby.log
+
+.DS_Store
