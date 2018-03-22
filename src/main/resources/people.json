@@ -1,0 +1,29 @@
+{
+    "status": 200,
+    "result": [
+        {
+            "name":"Michael",
+            "hobbies": [
+                "basketball",
+                "jogging"
+            ],
+            "age": 26
+        },
+        {
+            "name":"Andy",
+            "hobbies": [
+                "gaming"
+            ],
+            "age":30
+        },
+        {
+            "name":"Justin",
+            "hobbies": [
+                "volleyball",
+                "swimming"
+            ],
+            "age":19
+        }
+    ],
+    "latest_update_date": "2018-01-01"
+}   
