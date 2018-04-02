@@ -1,7 +1,7 @@
+import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions.explode
 import org.apache.spark.sql.functions.udf
 import org.apache.spark.sql.SparkSession
-
 
 object Json2Parquet {
   def main(args: Array[String]) {
@@ -10,14 +10,23 @@ object Json2Parquet {
       .appName("JSON to Parquet")
       .getOrCreate()
 
-    runTransformation(spark)
+      load(spark, transform(spark, extract(spark)))
   }
 
   def assertSameSize(arrs:Seq[_]*) = {
     assert(arrs.map(_.size).distinct.size==1,"sizes differ")
   }
 
-  private def runTransformation(spark: SparkSession): Unit = {
+  def extract(spark: SparkSession): DataFrame = {
+    // read a JSON file with object occupies multiple lines
+    val path = "src/main/resources/people.json"
+    val peopleDF = spark.read.option("multiline", "true").json(path)
+
+    peopleDF.show()
+    peopleDF
+  }
+  
+  def transform(spark: SparkSession, df: DataFrame): DataFrame = {
     import spark.implicits._
 
     val multi_zip = udf((
@@ -28,13 +37,9 @@ object Json2Parquet {
       }
     )
     
-    // read a JSON file with object occupies multiple lines
-    val path = "src/main/resources/people.json"
-    val peopleDF = spark.read.option("multiline", "true").json(path)
+    df.show()
 
-    peopleDF.show()
-
-    val transPeopleDF = peopleDF
+    val transPeopleDF = df
       .withColumn(
         "cols", explode(
           multi_zip($"result.name", $"result.hobbies", $"result.age")
@@ -45,10 +50,16 @@ object Json2Parquet {
         $"latest_update_date"
       )
 
-    transPeopleDF.write.parquet("people.parquet")
+    transPeopleDF.show()
+    transPeopleDF
+  }
 
+  def load(spark: SparkSession, df: DataFrame): Unit = {
+    df.write.parquet("people.parquet")
+
+    // test load
     val peopleParquetDF = spark.read.parquet("people.parquet")
-
     peopleParquetDF.show()
   }
+
 }
